@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Plantchi",
+    "slug": "plantchi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f0f"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.nousresearch.plantchi",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "Plantchi connects to your local plant monitoring server."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f0f"
+      },
+      "package": "com.nousresearch.plantchi"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "plantchi",
+    "extra": {
+      "eas": {
+        "projectId": "plantchi-local"
+      }
+    }
+  }
+}
