@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plantchi — UX Demo</title>
+  <style>
+    :root {
+      --bg:        #0f0f0f;
+      --card:      #1a1a1a;
+      --card2:     #222222;
+      --text:      #e0e0e0;
+      --muted:     #666666;
+      --accent:    #00ff88;
+      --ok:        #00ff88;
+      --warn:      #ffaa00;
+      --critical:  #ff3333;
+      --border:    #2a2a2a;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Phone shell ── */
+    .phone-wrap {
+      display: flex;
+      gap: 48px;
+      align-items: flex-start;
+      padding: 48px 24px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .phone {
+      flex-shrink: 0;
+      width: 390px;
+      min-height: 844px;
+      background: var(--bg);
+      border: 2px solid #333;
+      border-radius: 52px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7), inset 0 0 0 1px #444;
+    }
+
+    .phone-notch {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 120px; height: 34px;
+      background: #111;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
+    }
+
+    .phone-screen {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: none;
+    }
+    .phone-screen::-webkit-scrollbar { display: none; }
+
+    /* ── Screens ── */
+    .screen { display: none; flex-direction: column; min-height: 844px; padding: 0; }
+    .screen.active { display: flex; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 50px 28px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Nav bar ── */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 24px 16px;
+      flex-shrink: 0;
+    }
+    .nav-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .nav-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .nav-btn:hover { background: #2a2a2a; }
+
+    /* ── Scrollable content ── */
+    .screen-content {
+      flex: 1;
+      padding: 0 20px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Character card ── */
+    .character-card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 3px solid var(--ok);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.4s ease;
+    }
+    .character-emoji {
+      font-size: 96px;
+      line-height: 1.1;
+      text-align: center;
+      transition: all 0.4s ease;
+    }
+    .character-label {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--ok);
+      transition: color 0.4s ease;
+    }
+
+    /* ── Severity bar ── */
+    .severity-bar-wrap {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+    }
+    .severity-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .severity-track {
+      background: var(--card2);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .severity-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--ok);
+      transition: width 0.6s ease, background 0.4s ease;
+    }
+    .severity-text {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--ok);
+      font-weight: 600;
+      text-align: right;
+      transition: color 0.4s ease;
+    }
+
+    /* ── Sensor grid ── */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .sensor-tile {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .sensor-icon { font-size: 20px; }
+    .sensor-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+    }
+    .sensor-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .sensor-unit {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    /* ── Last updated ── */
+    .last-updated {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 0;
+    }
+
+    /* ── Refresh btn ── */
+    .refresh-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .refresh-btn:active { transform: scale(0.98); }
+    .refresh-btn:hover { background: #222; }
+
+    /* ── History screen ── */
+    .chart-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .sparkline-wrap {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sparkline {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 56px;
+    }
+    .spark-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      min-height: 4px;
+      transition: height 0.3s ease;
+    }
+    .spark-bar.soil     { background: #00aaff; }
+    .spark-bar.temp     { background: var(--warn); }
+    .spark-bar.light    { background: #ffee44; }
+    .sparkline-caption {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .reading-log {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .reading-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .reading-row:last-child { border-bottom: none; }
+    .reading-time { color: var(--muted); font-size: 12px; }
+    .reading-state {
+      font-weight: 700;
+      font-size: 12px;
+      padding: 3px 9px;
+      border-radius: 99px;
+    }
+    .reading-state.ok       { background: rgba(0,255,136,0.12); color: var(--ok); }
+    .reading-state.warn     { background: rgba(255,170,0,0.12);  color: var(--warn); }
+    .reading-state.critical { background: rgba(255,51,51,0.12);  color: var(--critical); }
+
+    /* ── Simulator panel ── */
+    .sim-panel {
+      flex: 1;
+      min-width: 280px;
+      max-width: 380px;
+    }
+    .sim-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .sim-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .sim-section {
+      margin-bottom: 20px;
+    }
+    .sim-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .sim-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .sim-row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sim-row-label {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .sim-row-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: right;
+    }
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .sim-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    .state-btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .state-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .state-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .state-btn.active { border-color: var(--accent); background: rgba(0,255,136,0.08); color: var(--accent); }
+
+    .sim-auto-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .sim-auto-label {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .toggle-switch {
+      position: relative;
+      width: 44px; height: 26px;
+      cursor: pointer;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--card2);
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: var(--muted);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: rgba(0,255,136,0.2); border-color: var(--accent); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); background: var(--accent); }
+
+    .screen-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--card);
+      border-radius: 99px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+    .screen-tab {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .screen-tab.active {
+      background: var(--card2);
+      color: var(--accent);
+    }
+
+    .notification-pill {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      gap: 12px;
+      align-items: flex-start;
+      animation: slideDown 0.3s ease;
+    }
+    .notification-pill.visible { display: flex; }
+    .notif-icon { font-size: 24px; flex-shrink: 0; }
+    .notif-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .notif-body  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 780px) {
+      .phone-wrap { flex-direction: column; align-items: center; }
+      .sim-panel  { max-width: 390px; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-wrap">
+
+  <!-- ── Phone ── -->
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen" id="phoneScreen">
+
+      <!-- HOME SCREEN -->
+      <div class="screen active" id="screenHome">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>Plantchi</span>
+          <span>●●●</span>
+        </div>
+        <div class="nav-bar">
+          <div class="nav-title" id="plantName">Monstera</div>
+          <button class="nav-btn" onclick="showScreen('screenHistory')">History</button>
+        </div>
+        <div class="screen-content">
+          <!-- Notification pill -->
+          <div class="notification-pill" id="notifPill">
+            <div class="notif-icon" id="notifIcon">💧</div>
+            <div>
+              <div class="notif-title" id="notifTitle">Your plant is thirsty</div>
+              <div class="notif-body" id="notifBody">Soil moisture has dropped below the optimal range.</div>
+            </div>
+          </div>
+
+          <!-- Character -->
+          <div class="character-card" id="charCard">
+            <div class="character-emoji" id="charEmoji">😊</div>
+            <div class="character-label" id="charLabel">Happy!</div>
+          </div>
+
+          <!-- Severity bar -->
+          <div class="severity-bar-wrap">
+            <div class="severity-label">Plant Status</div>
+            <div class="severity-track">
+              <div class="severity-fill" id="sevFill" style="width:80%"></div>
+            </div>
+            <div class="severity-text" id="sevText">All good</div>
+          </div>
+
+          <!-- Sensor grid -->
+          <div class="sensor-grid">
+            <div class="sensor-tile">
+              <div class="sensor-icon">💧</div>
+              <div class="sensor-label">Soil</div>
+              <div class="sensor-value"><span id="valSoil">42</span><span class="sensor-unit">%</span></div>
+            </div>
+            <div class="sensor-tile">
+              <div class="sensor-icon">☀️</div>
+              <div class="sensor-label">Light</div>
+              <div class="sensor-value"><span id="valLight">2400</span><span class="sensor-unit"> lux</span></div>
+            </div>
+            <div class="sensor-tile">
+              <div class="sensor-icon">🌡️</div>
+              <div class="sensor-label">Temp</div>
+              <div class="sensor-value"><span id="valTemp">22</span><span class="sensor-unit">°C</span></div>
+            </div>
+            <div class="sensor-tile">
+              <div class="sensor-icon">💨</div>
+              <div class="sensor-label">Humidity</div>
+              <div class="sensor-value"><span id="valHumidity">58</span><span class="sensor-unit">%</span></div>
+            </div>
+          </div>
+
+          <div class="last-updated" id="lastUpdated">Updated just now</div>
+          <button class="refresh-btn" onclick="doRefresh()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <!-- HISTORY SCREEN -->
+      <div class="screen" id="screenHistory">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span>Plantchi</span>
+          <span>●●●</span>
+        </div>
+        <div class="nav-bar">
+          <button class="nav-btn" onclick="showScreen('screenHome')">← Back</button>
+          <div class="nav-title" style="font-size:20px">History</div>
+          <div style="width:64px"></div>
+        </div>
+        <div class="screen-content">
+          <div class="sparkline-wrap">
+            <div class="chart-label">💧 Soil Moisture — 24h</div>
+            <div class="sparkline" id="sparkSoil"></div>
+            <div class="sparkline-caption"><span>24h ago</span><span>now</span></div>
+          </div>
+
+          <div class="sparkline-wrap">
+            <div class="chart-label">🌡️ Temperature — 24h</div>
+            <div class="sparkline" id="sparkTemp"></div>
+            <div class="sparkline-caption"><span>24h ago</span><span>now</span></div>
+          </div>
+
+          <div class="sparkline-wrap">
+            <div class="chart-label">☀️ Light — 24h</div>
+            <div class="sparkline" id="sparkLight"></div>
+            <div class="sparkline-caption"><span>24h ago</span><span>now</span></div>
+          </div>
+
+          <div class="chart-label" style="margin-top:4px">State Log</div>
+          <div class="reading-log" id="readingLog"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Simulator panel ── -->
+  <div class="sim-panel">
+    <div class="sim-title">Simulator</div>
+    <div class="sim-sub">Tweak sensors to test every plant state</div>
+
+    <!-- Screen tabs -->
+    <div class="screen-tabs">
+      <div class="screen-tab active" id="tab-home" onclick="switchSim('home')">Home</div>
+      <div class="screen-tab"        id="tab-history" onclick="switchSim('history')">History</div>
+    </div>
+
+    <div class="sim-section">
+      <div class="sim-section-label">Quick States</div>
+      <div class="state-btn-grid">
+        <button class="state-btn active" onclick="applyPreset('HAPPY')">😊 Happy</button>
+        <button class="state-btn" onclick="applyPreset('THRIVING')">🌟 Thriving</button>
+        <button class="state-btn" onclick="applyPreset('THIRSTY')">😢 Thirsty</button>
+        <button class="state-btn" onclick="applyPreset('DROWNING')">💀 Drowning</button>
+        <button class="state-btn" onclick="applyPreset('HUNGRY')">🍽️ Hungry</button>
+        <button class="state-btn" onclick="applyPreset('COLD')">🥶 Cold</button>
+        <button class="state-btn" onclick="applyPreset('HOT')">🥵 Hot</button>
+        <button class="state-btn" onclick="applyPreset('DIM')">🌑 Dim</button>
+        <button class="state-btn" onclick="applyPreset('SCORCHED')">☀️ Scorched</button>
+        <button class="state-btn" onclick="applyPreset('SLEEPING')">😴 Sleeping</button>
+      </div>
+    </div>
+
+    <hr class="sim-divider">
+
+    <div class="sim-section">
+      <div class="sim-section-label">Fine-tune Sensors</div>
+
+      <div class="sim-row">
+        <div class="sim-row-header">
+          <div class="sim-row-label">💧 Soil Moisture</div>
+          <div class="sim-row-value" id="lbl-soil">42%</div>
+        </div>
+        <input type="range" min="0" max="100" value="42" id="sl-soil" oninput="onSlider()">
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-row-header">
+          <div class="sim-row-label">☀️ Light</div>
+          <div class="sim-row-value" id="lbl-light">2400 lux</div>
+        </div>
+        <input type="range" min="0" max="20000" value="2400" id="sl-light" oninput="onSlider()">
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-row-header">
+          <div class="sim-row-label">🌡️ Temperature</div>
+          <div class="sim-row-value" id="lbl-temp">22°C</div>
+        </div>
+        <input type="range" min="0" max="50" value="22" id="sl-temp" oninput="onSlider()">
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-row-header">
+          <div class="sim-row-label">💨 Humidity</div>
+          <div class="sim-row-value" id="lbl-hum">58%</div>
+        </div>
+        <input type="range" min="0" max="100" value="58" id="sl-hum" oninput="onSlider()">
+      </div>
+
+      <div class="sim-row">
+        <div class="sim-row-header">
+          <div class="sim-row-label">🧪 Conductivity</div>
+          <div class="sim-row-value" id="lbl-cond">850 ppm</div>
+        </div>
+        <input type="range" min="0" max="3000" value="850" id="sl-cond" oninput="onSlider()">
+      </div>
+    </div>
+
+    <hr class="sim-divider">
+
+    <div class="sim-section">
+      <div class="sim-section-label">Time of Day</div>
+      <div class="sim-row">
+        <div class="sim-row-header">
+          <div class="sim-row-label">🕐 Hour</div>
+          <div class="sim-row-value" id="lbl-hour">14:00</div>
+        </div>
+        <input type="range" min="0" max="23" value="14" id="sl-hour" oninput="onSlider()">
+      </div>
+    </div>
+
+    <hr class="sim-divider">
+
+    <div class="sim-section">
+      <div class="sim-section-label">Auto-cycle</div>
+      <div class="sim-auto-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="autoToggle" onchange="toggleAuto()">
+          <span class="toggle-slider"></span>
+        </label>
+        <div class="sim-auto-label">Cycle through all states</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Design tokens (mirror app theme.ts) ──
+  const C = {
+    ok:       '#00ff88',
+    warn:     '#ffaa00',
+    critical: '#ff3333',
+  };
+
+  // ── State definitions ──
+  const STATES = {
+    HAPPY:    { emoji: '😊', label: 'Happy!',      severity: 'ok',       fill: 85,  notif: null },
+    THRIVING: { emoji: '🌟', label: 'Thriving!',   severity: 'ok',       fill: 100, notif: null },
+    THIRSTY:  { emoji: '😢', label: 'Thirsty...',  severity: 'warn',     fill: 35,  notif: { icon: '💧', title: 'Your plant is thirsty', body: 'Soil moisture has dropped below the optimal range.' } },
+    DROWNING: { emoji: '💀', label: 'Drowning!',   severity: 'critical', fill: 20,  notif: { icon: '🚨', title: 'Overwatered!', body: 'Soil moisture has been too high for over 24 hours.' } },
+    HUNGRY:   { emoji: '🍽️', label: 'Hungry',      severity: 'warn',     fill: 40,  notif: { icon: '🧪', title: 'Needs nutrients', body: 'Soil conductivity is below optimal. Time to fertilise.' } },
+    COLD:     { emoji: '🥶', label: 'Cold!',       severity: 'critical', fill: 15,  notif: { icon: '🥶', title: 'Too cold!', body: 'Temperature has dropped below the safe range for your plant.' } },
+    HOT:      { emoji: '🥵', label: 'Too hot!',    severity: 'critical', fill: 15,  notif: { icon: '🔥', title: 'Too hot!', body: 'Temperature is above the safe range. Move to a cooler spot.' } },
+    DIM:      { emoji: '🌑', label: 'Too dark',    severity: 'warn',     fill: 40,  notif: { icon: '🌑', title: 'Not enough light', body: "Your plant hasn't had enough light today." } },
+    SCORCHED: { emoji: '☀️', label: 'Scorching!',  severity: 'critical', fill: 10,  notif: { icon: '☀️', title: 'Too much direct light', body: 'Light intensity is dangerously high. Move out of direct sun.' } },
+    SLEEPING: { emoji: '😴', label: 'Sleeping',    severity: 'ok',       fill: 70,  notif: null },
+  };
+
+  const SEV_COLOR = { ok: C.ok, warn: C.warn, critical: C.critical };
+  const SEV_LABEL = { ok: 'All good', warn: 'Needs attention', critical: 'Act now!' };
+
+  // ── Presets ──
+  const PRESETS = {
+    HAPPY:    { soil: 42, light: 2400, temp: 22, hum: 58, cond: 850, hour: 14 },
+    THRIVING: { soil: 55, light: 3800, temp: 23, hum: 62, cond: 1200, hour: 12 },
+    THIRSTY:  { soil: 12, light: 2400, temp: 22, hum: 50, cond: 850, hour: 14 },
+    DROWNING: { soil: 92, light: 2400, temp: 22, hum: 75, cond: 850, hour: 14 },
+    HUNGRY:   { soil: 42, light: 2400, temp: 22, hum: 58, cond: 60,  hour: 14 },
+    COLD:     { soil: 42, light: 2400, temp: 8,  hum: 45, cond: 850, hour: 14 },
+    HOT:      { soil: 42, light: 2400, temp: 38, hum: 30, cond: 850, hour: 14 },
+    DIM:      { soil: 42, light: 80,   temp: 22, hum: 58, cond: 850, hour: 14 },
+    SCORCHED: { soil: 42, light: 18000,temp: 22, hum: 40, cond: 850, hour: 14 },
+    SLEEPING: { soil: 42, light: 0,    temp: 21, hum: 58, cond: 850, hour: 1  },
+  };
+
+  // ── History simulation data ──
+  let historyLog = [];
+  let soilH  = Array.from({length: 24}, (_,i) => 30 + Math.sin(i*0.4)*12 + Math.random()*5);
+  let tempH  = Array.from({length: 24}, (_,i) => 20 + Math.sin(i*0.3)*4  + Math.random()*2);
+  let lightH = Array.from({length: 24}, (_,i) => i>6&&i<20 ? 1000+Math.sin((i-6)*0.3)*2000+Math.random()*400 : 0);
+
+  function pushHistory(state, sev) {
+    const now = new Date();
+    const t = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    historyLog.unshift({ time: t, state, sev });
+    if (historyLog.length > 8) historyLog.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    // Sparklines
+    ['Soil','Temp','Light'].forEach(key => {
+      const arr = key==='Soil' ? soilH : key==='Temp' ? tempH : lightH;
+      const max = Math.max(...arr, 1);
+      const el = document.getElementById('spark'+key);
+      el.innerHTML = arr.map(v => {
+        const h = Math.max(4, Math.round((v/max)*56));
+        const cls = key==='Soil' ? 'soil' : key==='Temp' ? 'temp' : 'light';
+        return `<div class="spark-bar ${cls}" style="height:${h}px"></div>`;
+      }).join('');
+    });
+
+    // State log
+    const log = document.getElementById('readingLog');
+    if (historyLog.length === 0) {
+      log.innerHTML = '<div class="reading-row"><span style="color:var(--muted);font-size:13px">No state changes yet</span></div>';
+      return;
+    }
+    log.innerHTML = historyLog.map(r => `
+      <div class="reading-row">
+        <span class="reading-time">${r.time}</span>
+        <span class="reading-state ${r.sev}">${r.state}</span>
+      </div>
+    `).join('');
+  }
+
+  // ── Core render ──
+  let currentState = 'HAPPY';
+
+  function render(state) {
+    const s = STATES[state];
+    const color = SEV_COLOR[s.severity];
+    currentState = state;
+
+    // Character
+    document.getElementById('charEmoji').textContent = s.emoji;
+    document.getElementById('charLabel').textContent = s.label;
+    document.getElementById('charLabel').style.color = color;
+    document.getElementById('charCard').style.borderColor = color;
+
+    // Severity bar
+    document.getElementById('sevFill').style.width = s.fill + '%';
+    document.getElementById('sevFill').style.background = color;
+    document.getElementById('sevText').textContent = SEV_LABEL[s.severity];
+    document.getElementById('sevText').style.color = color;
+
+    // Notification
+    const pill = document.getElementById('notifPill');
+    if (s.notif) {
+      document.getElementById('notifIcon').textContent = s.notif.icon;
+      document.getElementById('notifTitle').textContent = s.notif.title;
+      document.getElementById('notifBody').textContent = s.notif.body;
+      pill.classList.add('visible');
+    } else {
+      pill.classList.remove('visible');
+    }
+
+    // Timestamp
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent =
+      `Updated ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+
+    // History
+    pushHistory(state, s.severity);
+
+    // Highlight active state btn
+    document.querySelectorAll('.state-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent.includes(state) ||
+        (state==='HAPPY' && b.textContent.includes('Happy')));
+    });
+  }
+
+  function updateSensorDisplay() {
+    const soil  = +document.getElementById('sl-soil').value;
+    const light = +document.getElementById('sl-light').value;
+    const temp  = +document.getElementById('sl-temp').value;
+    const hum   = +document.getElementById('sl-hum').value;
+    const cond  = +document.getElementById('sl-cond').value;
+    const hour  = +document.getElementById('sl-hour').value;
+
+    document.getElementById('valSoil').textContent    = soil;
+    document.getElementById('valLight').textContent   = light.toLocaleString();
+    document.getElementById('valTemp').textContent    = temp;
+    document.getElementById('valHumidity').textContent = hum;
+
+    document.getElementById('lbl-soil').textContent  = soil + '%';
+    document.getElementById('lbl-light').textContent = light.toLocaleString() + ' lux';
+    document.getElementById('lbl-temp').textContent  = temp + '°C';
+    document.getElementById('lbl-hum').textContent   = hum + '%';
+    document.getElementById('lbl-cond').textContent  = cond + ' ppm';
+    document.getElementById('lbl-hour').textContent  = String(hour).padStart(2,'0') + ':00';
+
+    // Simple state derivation (mirrors backend state_engine.py priority order)
+    let state = 'HAPPY';
+    const thresholds = { minSoil:25, maxSoil:65, minLight:500, maxLight:8000, minTemp:16, maxTemp:32, minCond:100 };
+
+    if (hour >= 22 || hour < 7)                      state = 'SLEEPING';
+    else if (soil > thresholds.maxSoil + 15)         state = 'DROWNING';
+    else if (soil < thresholds.minSoil)              state = 'THIRSTY';
+    else if (temp > thresholds.maxTemp)              state = 'HOT';
+    else if (temp < thresholds.minTemp)              state = 'COLD';
+    else if (light > thresholds.maxLight + 5000)     state = 'SCORCHED';
+    else if (light < thresholds.minLight && hour>7)  state = 'DIM';
+    else if (cond < thresholds.minCond)              state = 'HUNGRY';
+    else if (soil >= 40 && soil <= 65 && temp >= 20 && temp <= 28 && light >= 1000) state = 'THRIVING';
+    else                                             state = 'HAPPY';
+
+    render(state);
+  }
+
+  function onSlider() { updateSensorDisplay(); }
+
+  function applyPreset(state) {
+    const p = PRESETS[state];
+    document.getElementById('sl-soil').value  = p.soil;
+    document.getElementById('sl-light').value = p.light;
+    document.getElementById('sl-temp').value  = p.temp;
+    document.getElementById('sl-hum').value   = p.hum;
+    document.getElementById('sl-cond').value  = p.cond;
+    document.getElementById('sl-hour').value  = p.hour;
+    updateSensorDisplay();
+  }
+
+  function doRefresh() {
+    const btn = document.querySelector('.refresh-btn');
+    btn.textContent = '↻ Refreshing…';
+    btn.style.opacity = '0.5';
+    setTimeout(() => {
+      btn.textContent = '↻ Refresh';
+      btn.style.opacity = '1';
+      document.getElementById('lastUpdated').textContent = 'Updated just now';
+    }, 900);
+  }
+
+  // ── Screen switching ──
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('phoneScreen').scrollTop = 0;
+  }
+
+  function switchSim(tab) {
+    document.getElementById('tab-home').classList.toggle('active', tab==='home');
+    document.getElementById('tab-history').classList.toggle('active', tab==='history');
+    showScreen(tab==='home' ? 'screenHome' : 'screenHistory');
+  }
+
+  // ── Auto-cycle ──
+  let autoTimer = null;
+  const AUTO_STATES = ['HAPPY','THRIVING','THIRSTY','DROWNING','HUNGRY','COLD','HOT','DIM','SCORCHED','SLEEPING'];
+  let autoIdx = 0;
+
+  function toggleAuto() {
+    const on = document.getElementById('autoToggle').checked;
+    if (on) {
+      autoIdx = 0;
+      autoTimer = setInterval(() => {
+        applyPreset(AUTO_STATES[autoIdx % AUTO_STATES.length]);
+        autoIdx++;
+      }, 2000);
+    } else {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
+  }
+
+  // ── Init ──
+  renderHistory();
+  render('HAPPY');
+</script>
+</body>
+</html>
